@@ -1,0 +1,4 @@
+name =  Exam Portal Entry
+description = Exam Portal Entry functionality.
+core = 7.x
+package = Exam Portal
