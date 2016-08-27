@@ -1,0 +1,89 @@
+<?php
+
+/**
+ * @file
+ * The Findit account module.
+ *
+ * Provides account related functionalities and customizations.
+ */
+
+/**
+ * Implements hook_menu.
+ */
+function portal_entry_menu() {
+  $items = array();
+  $items['add-question-data'] = array(
+    'title' => 'Add Question Data',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('portal_entry_add_question_settings'),
+    'access callback' => TRUE,
+    'description' => 'Add question Form',
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'portal_entry.inc',
+  );
+  $items['add-question-data/edit/%'] = array(
+    'title' => 'Edit Question data',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('portal_entry_add_question_edit'),  
+    'access callback' => TRUE,
+    'description' => 'question Edit Form',
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'portal_entry.inc',
+  );  
+  $items['added_question_listing'] = array(
+    'title' => 'Question Listing',
+    'page callback' => 'portal_entry_added_question_listing',
+    'access callback' => TRUE,
+    'file' => 'portal_entry.inc',      
+  );  
+  return $items;
+}
+
+/**
+ * fuction to fetch all exam code.
+ */
+function exam_portal_all_exam_code() {
+    db_set_active('legecy');    
+    $query = db_select('exam', 'e')
+        ->fields('e', array('id', 'exam_code'))
+        ->execute();
+
+    db_set_active('default'); // We need to call the main (drupal) db back      
+    $result = $query->fetchAll();
+    foreach ($result as $value){
+        $res[$value->id] = $value->exam_code;
+    }    
+    return $res;     
+}
+
+/**
+ * fuction to fetch all subject code.
+ */
+function exam_portal_all_subject_code() {
+    db_set_active('legecy');    
+    $query = db_select('subjects', 's')
+        ->fields('s', array('id', 'subject_code'))
+        ->execute();
+    db_set_active('default'); // We need to call the main (drupal) db back      
+    $result = $query->fetchAll();   
+    foreach ($result as $value){
+        $res[$value->id] = $value->subject_code;
+    }    
+    return $res;     
+}
+
+/**
+ * fuction to fetch all region code.
+ */
+function exam_portal_all_region_code() {
+    db_set_active('legecy');    
+    $query = db_select('regions', 'r')
+        ->fields('r', array('id', 'region_code'))
+        ->execute();
+    db_set_active('default'); // We need to call the main (drupal) db back      
+    $result = $query->fetchAll();   
+    foreach ($result as $value){
+        $res[$value->id] = $value->region_code;
+    }    
+    return $res;     
+}
