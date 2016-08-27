@@ -1,0 +1,4 @@
+name = Answersheet
+description = Module used to save answer sheets related to users.
+core = 7.x
+package = Custom

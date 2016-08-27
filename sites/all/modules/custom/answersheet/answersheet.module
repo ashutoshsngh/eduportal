@@ -1,0 +1,129 @@
+<?php
+
+/**
+ * @file
+ * Main module file.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function answersheet_menu() {
+  $items = array();
+
+  $items['add/answer/sheet'] = array(
+    'title' => 'Add answer sheet',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('answersheet_add_form'),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/answersheet.add_form.inc',
+  );
+
+  $items['answer/sheet/list'] = array(
+    'title' => 'Answer Sheet List',
+    'page callback' => 'answer_sheet_list_callback',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/answersheet.add_form.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Load subject data based on subject id.
+ * @param type $sid
+ * @return type
+ */
+function subject_load($sid) {
+  db_set_active('legecy');
+  $query = db_select('subjects', 's');
+  $query->fields('s');
+  $query->condition('s.id', $sid, '=');
+  $result = $query->execute()->fetchObject();
+  return $result;
+}
+
+/**
+ * Load region data based on subject id.
+ * @param type $rid
+ * @return type
+ */
+function region_load($rid) {
+  db_set_active('legecy');
+  $query = db_select('regions', 'r');
+  $query->fields('r');
+  $query->condition('r.id', $rid, '=');
+  $result = $query->execute()->fetchObject();
+  return $result;
+}
+
+/**
+ * Get all questions set options.
+ *
+ * @return string
+ */
+function get_submitted_paper_options() {
+  db_set_active('legecy');
+  $query = db_select('question_papers', 'qp');
+  $query->fields('qp');
+  $result = $query->execute()->fetchAll();
+  $options = array('_none' => 'Subject|Region|Set|Language|PaperCode');
+  if (!empty($result)) {
+    foreach ($result as $key => $value) {
+      $subject = subject_load($value->subject_id);
+      $region = region_load($value->region_id);
+      $key = $subject->subject_code . '-' . $region->region_code . '-' . $value->paper_set . '-' . $value->language;
+      $value = $subject->subject_name . '-' . $region->region_name . '-' . $value->paper_set . '-' . $value->language;
+      $options[$key] = $value;
+    }
+  }
+  return $options;
+}
+
+/**
+ * Batch process for saving answer sheet.
+ * @param type $filename
+ * @param type $values
+ * @param type $context
+ */
+function answersheet_batch_fix_process($filename, $values, &$context) {
+  $selectedpaper = explode('-', $values['select_paper']);
+  db_set_active('legecy');
+  $insert = db_insert('answer_sheets');
+  $insert->fields(array(
+    'sheet_name' => $filename,
+    'subject_code' => $selectedpaper[0],
+    'region_code' => $selectedpaper[1],
+    'exam_code' => $values['exam_code'],
+    'paper_set' => $selectedpaper[2],
+    'language' => $selectedpaper[3],
+    'status' => 'unallocated',
+    'evaluation_marks' => 0,
+    're_evaluation_marks' => 0,
+    'alloted_to' => 0,
+  ));
+  $insert->execute();
+  db_set_active('default');
+}
+
+/**
+ * Callback to display message after batch job is completed.
+ * @param type $success
+ * @param type $results
+ * @param type $operations
+ */
+function answersheet_batch_fix_finished($success, $results, $operations) {
+  if ($success) {
+    $message = 'Answersheet uploaded successfully.';
+  }
+  else {
+    // An error occurred.
+    // $operations contains the operations that remained unprocessed.
+    $error_operation = reset($operations);
+    $message = 'An error occurred while processing ' . $error_operation[0] . ' with arguments :' . print_r($error_operation[0], TRUE);
+  }
+  drupal_set_message($message);
+  drupal_set_message(l('Run Batch Again', 'example/batch'));
+}
