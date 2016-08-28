@@ -81,7 +81,7 @@ function get_submitted_paper_options() {
       $subject = subject_load($value->subject_id);
       $region = region_load($value->region_id);
       $exam = exam_load($value->exam_id);
-      $key = $subject->subject_code . '-' . $region->region_code . '-' . $value->paper_set . '-' . $value->language . '-' . $exam->exam_code;
+      $key = $subject->subject_code . '-' . $region->region_code . '-' . $value->paper_set . '-' . $value->language . '-' . $exam->exam_code . '-' . $value->paper_code;
       $value = $subject->subject_name . '-' . $region->region_name . '-' . $value->paper_set . '-' . $value->language;
       $options[$key] = $value;
     }
@@ -103,13 +103,16 @@ function answersheet_batch_fix_process($filename, $values, &$context) {
     'sheet_name' => $filename,
     'subject_code' => $selectedpaper[0],
     'region_code' => $selectedpaper[1],
-    'exam_code' => $values['exam_code'],
+    'exam_code' => $selectedpaper[4],
     'paper_set' => $selectedpaper[2],
     'language' => $selectedpaper[3],
-    'status' => 'unallocated',
+    'paper_code' => $selectedpaper[5],
+    'status' => 'UNALLOCATED',
     'evaluation_marks' => 0,
     're_evaluation_marks' => 0,
     'alloted_to' => 0,
+    'head_examiner' => 0,
+    'examiner' => 0,
   ));
   $insert->execute();
   db_set_active('default');

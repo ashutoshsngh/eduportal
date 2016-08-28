@@ -30,7 +30,7 @@ function answersheet_add_form() {
     '#name' => 'files[]',
     '#title' => t('Upload answer sheets'),
     '#attributes' => array('multiple' => 'multiple'),
-    '#required' => TRUE,
+      // '#required' => TRUE,
   );
 
   $form['submit'] = array(
@@ -46,7 +46,7 @@ function answersheet_add_form_submit($form, &$form_state) {
   $batch = array(
     'operations' => array(),
     'finished' => 'answersheet_batch_fix_finished',
-    'title' => t('Batch fix'),
+    'title' => t('Upload Progress'),
     'init_message' => t('Upload is starting...'),
     'progress_message' => t('Processed @current out of @total.'),
     'error_message' => t('Fix has encountered an error.')
