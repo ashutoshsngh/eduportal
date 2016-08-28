@@ -49,12 +49,12 @@ function portal_entry_add_question_settings($form_state) {
 
   $form['pe_main_ans_sheet_count'] = array(
     '#type' => 'textfield',
-    '#title' => t('Sheet Count'),
+    '#title' => t('Main Sheet Count'),
   );  
   
   $form['pe_supp_ans_sheet_count'] = array(
     '#type' => 'textfield',
-    '#title' => t('Sheet Count'),
+    '#title' => t('Supplimentary Sheet Count'),
   );    
   
   $form['pe_model_ques_file'] = array(
@@ -78,13 +78,16 @@ function portal_entry_add_question_settings($form_state) {
  */
 function portal_entry_add_question_settings_submit($form, &$form_state) {
     db_set_active('legecy');
+    $form_state['redirect'] = 'added_question_listing';
     $question_insert = db_insert('question_papers') // Table name no longer needs {}
     ->fields(array(
       'exam_id' => $form_state['input']['pe_exam_code'],
       'subject_id' => $form_state['input']['pe_subject_code'],
+      'exam_code' => get_exam_code_by_exam_id($form_state['input']['pe_exam_code']),
+      'region_code' => get_region_code_by_region_id($form_state['input']['pe_region']),                
       'region_id' => $form_state['input']['pe_region'],
       'paper_code' => $form_state['input']['pe_paper_code'],
-      'subject_code' => '',
+      'subject_code' => get_subject_code_by_subject_id($form_state['input']['pe_subject_code']),
       'language' => $form_state['input']['pe_language'],
       'paper_set' => $form_state['input']['pe_paper_set'],
       'model_question_link' => $form_state['input']['pe_model_ques_file'],
@@ -93,6 +96,7 @@ function portal_entry_add_question_settings_submit($form, &$form_state) {
       'suppl_sheet_page_count' => $form_state['input']['pe_supp_ans_sheet_count'],
     ))
     ->execute();    
+
     db_set_active('default'); // We need to call the main (drupal) db back  
     drupal_set_message(t('inserted successfully.'));  
 }
@@ -156,13 +160,13 @@ function portal_entry_add_question_edit($form_state) {
 
   $form['pe_main_ans_sheet_count'] = array(
     '#type' => 'textfield',
-    '#title' => t('Sheet Count'),
+    '#title' => t('Main Sheet Count'),
     '#default_value' => $result['main_sheet_page_count'],  
   );  
   
   $form['pe_supp_ans_sheet_count'] = array(
     '#type' => 'textfield',
-    '#title' => t('Sheet Count'),
+    '#title' => t('Supplementary Sheet Count'),
     '#default_value' => $result['suppl_sheet_page_count'],  
   );    
   

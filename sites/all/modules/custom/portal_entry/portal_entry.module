@@ -13,7 +13,7 @@
 function portal_entry_menu() {
   $items = array();
   $items['add-question-data'] = array(
-    'title' => 'Add Question Data',
+    'title' => 'Add Question Paper',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('portal_entry_add_question_settings'),
     'access callback' => TRUE,
@@ -22,7 +22,7 @@ function portal_entry_menu() {
     'file' => 'portal_entry.inc',
   );
   $items['add-question-data/edit/%'] = array(
-    'title' => 'Edit Question data',
+    'title' => 'Edit Question Paper',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('portal_entry_add_question_edit'),  
     'access callback' => TRUE,
@@ -86,4 +86,43 @@ function exam_portal_all_region_code() {
         $res[$value->id] = $value->region_code;
     }    
     return $res;     
+}
+
+/**
+ * function to get exam code by exam id.
+ */
+function get_exam_code_by_exam_id($id) {
+    db_set_active('legecy');    
+    $query = db_select('exam', 'e')
+        ->fields('e', array('exam_code'))
+        ->execute();
+    db_set_active('default'); // We need to call the main (drupal) db back      
+    $result = $query->fetchField(); 
+    return $result;
+}
+
+/**
+ * function to get exam code by exam id.
+ */
+function get_region_code_by_region_id($id) {
+    db_set_active('legecy');    
+    $query = db_select('regions', 'r')
+        ->fields('r', array('region_code'))
+        ->execute();
+    db_set_active('default'); // We need to call the main (drupal) db back      
+    $result = $query->fetchField();       
+    return $result;
+}
+
+/**
+ * function to get exam code by exam id.
+ */
+function get_subject_code_by_subject_id($id) {
+    db_set_active('legecy');    
+    $query = db_select('subjects', 's')
+        ->fields('s', array('subject_code'))
+        ->execute();
+    db_set_active('default'); // We need to call the main (drupal) db back      
+    $result = $query->fetchField();       
+    return $result;
 }
