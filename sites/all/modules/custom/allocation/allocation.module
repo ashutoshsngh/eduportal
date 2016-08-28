@@ -19,10 +19,10 @@ function allocation_menu() {
     'file' => 'includes/allocation.manage_allocation.inc',
   );
 
-  $items['allocation_entry'] = array(
+  $items['allocation_entry/%'] = array(
     'title' => 'Add Allocation',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('allocation_details_entry'),
+    'page arguments' => array('allocation_details_entry', 1),
     'access callback' => TRUE,
     'description' => 'Add Allocation',
     'type' => MENU_LOCAL_TASK,
@@ -46,4 +46,31 @@ function exam_portal_all_head_examiner() {
     $res[$value->id] = $value->name;
   }
   return $res;
+}
+
+/**
+ * Total unallocted count based on paper id.
+ */
+function answersheet_unallocated_count($code) {
+  db_set_active('legecy');
+  $query = db_select('answer_sheets', 's');
+  $query->fields('s', array('id'))
+      ->condition('s.paper_code', $code)
+      ->condition('s.STATUS', 'UNALLOCATED');
+  $result = $query->execute()->rowCount();
+  db_set_active('default');
+  return $result;
+}
+
+/**
+ * Get question details based on papercode.
+ */
+function questionpaper_details($code) {
+  db_set_active('legecy');
+  $query = db_select('question_papers', 'q');
+  $query->fields('q')
+      ->condition('q.paper_code', $code);
+  $result = $query->execute()->fetchAll();
+  db_set_active('default');
+  return $result;
 }
