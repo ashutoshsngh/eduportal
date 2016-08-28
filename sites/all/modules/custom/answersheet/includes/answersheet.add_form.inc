@@ -9,20 +9,20 @@
  * Callback function for answersheet add form.
  */
 function answersheet_add_form() {
+  drupal_add_js(drupal_get_path('module', 'answersheet') . '/answersheet.js');
   $options = get_submitted_paper_options();
   db_set_active('default');
   $form['select_paper'] = array(
     '#type' => 'select',
     '#options' => $options,
     '#title' => t('Select Paper'),
-      // '#required' => TRUE,
+    '#description' => t('Subject|Region|Set|Language'),
+    '#required' => TRUE,
   );
 
   $form['exam_code'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Exam Code'),
-    '#size' => 37,
-    '#required' => TRUE,
+    '#type' => 'markup',
+    '#markup' => '<div id="exam_code_wrapper" style="display:none;">Exam Code : <div id="exam_code_value"></div></div>',
   );
 
   $form['file'] = array(
@@ -30,11 +30,12 @@ function answersheet_add_form() {
     '#name' => 'files[]',
     '#title' => t('Upload answer sheets'),
     '#attributes' => array('multiple' => 'multiple'),
+    '#required' => TRUE,
   );
 
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Submit'),
+    '#value' => t('Import'),
   );
 
   return $form;
@@ -56,8 +57,4 @@ function answersheet_add_form_submit($form, &$form_state) {
   }
   batch_set($batch);
   batch_process('add/answer/sheet'); // The path to redirect to when done.
-}
-
-function answer_sheet_list_callback() {
-  return 'i m here';
 }

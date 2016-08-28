@@ -20,14 +20,6 @@ function answersheet_menu() {
     'file' => 'includes/answersheet.add_form.inc',
   );
 
-  $items['answer/sheet/list'] = array(
-    'title' => 'Answer Sheet List',
-    'page callback' => 'answer_sheet_list_callback',
-    'access callback' => TRUE,
-    'type' => MENU_CALLBACK,
-    'file' => 'includes/answersheet.add_form.inc',
-  );
-
   return $items;
 }
 
@@ -60,6 +52,20 @@ function region_load($rid) {
 }
 
 /**
+ * Load region data based on exam id.
+ * @param type $eid
+ * @return type
+ */
+function exam_load($eid) {
+  db_set_active('legecy');
+  $query = db_select('exam', 'e');
+  $query->fields('e');
+  $query->condition('e.id', $eid, '=');
+  $result = $query->execute()->fetchObject();
+  return $result;
+}
+
+/**
  * Get all questions set options.
  *
  * @return string
@@ -69,12 +75,13 @@ function get_submitted_paper_options() {
   $query = db_select('question_papers', 'qp');
   $query->fields('qp');
   $result = $query->execute()->fetchAll();
-  $options = array('_none' => 'Subject|Region|Set|Language|PaperCode');
+  $options = array();
   if (!empty($result)) {
     foreach ($result as $key => $value) {
       $subject = subject_load($value->subject_id);
       $region = region_load($value->region_id);
-      $key = $subject->subject_code . '-' . $region->region_code . '-' . $value->paper_set . '-' . $value->language;
+      $exam = exam_load($value->exam_id);
+      $key = $subject->subject_code . '-' . $region->region_code . '-' . $value->paper_set . '-' . $value->language . '-' . $exam->exam_code;
       $value = $subject->subject_name . '-' . $region->region_name . '-' . $value->paper_set . '-' . $value->language;
       $options[$key] = $value;
     }
