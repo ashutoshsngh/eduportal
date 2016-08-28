@@ -1,8 +1,49 @@
 <?php
 
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * @file
+ * Main module file.
  */
 
+/**
+ * Implements hook_menu().
+ */
+function allocation_menu() {
+  $items = array();
+
+  $items['manage/allocation'] = array(
+    'title' => 'Manage allocation',
+    'page callback' => 'manage_allocation_callback',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/allocation.manage_allocation.inc',
+  );
+
+  $items['allocation_entry'] = array(
+    'title' => 'Add Allocation',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('allocation_details_entry'),
+    'access callback' => TRUE,
+    'description' => 'Add Allocation',
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'includes/allocation_details.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * fuction to fetch all head examiner.
+ */
+function exam_portal_all_head_examiner() {
+  db_set_active('legecy');
+  $query = db_select('head_examiners', 'he')
+      ->fields('he', array('id', 'name'))
+      ->execute();
+  db_set_active('default'); // We need to call the main (drupal) db back      
+  $result = $query->fetchAll();
+  foreach ($result as $value) {
+    $res[$value->id] = $value->name;
+  }
+  return $res;
+}
