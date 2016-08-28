@@ -1,0 +1,4 @@
+name = Allocation
+description = Module used to manage answersheet allocations.
+core = 7.x
+package = Custom
