@@ -56,11 +56,13 @@ function allocation_details_entry($forn, &$form_state, $code) {
   $form['no_sheet_allocated'] = array(
     "#type" => 'textfield',
     "#title" => t("Number of sheet to be allocated"),
+    '#required' => TRUE,
   );
   $form['head_examiner'] = array(
     '#type' => 'select',
     "#title" => t("Select Head Examiner"),
     '#options' => exam_portal_all_head_examiner(),
+    '#required' => TRUE,
   );
 
   $form['submit'] = array(
@@ -86,18 +88,15 @@ function allocation_details_entry_submit($form, &$form_state) {
       ))
       ->execute();
 
-  $ans_update = "UPDATE answer_sheets SET status = :status, head_examiner = :head_examiner WHERE paper_code = :paper_code AND status = :check_status LIMIT 2";
-  $ans_updated = db_query($ans_update, array(':status' => 'ALLOCATED', ':head_examiner' => $form_state['input']['head_examiner'], ':paper_code' => $form_state['input']['allocation_papercode'], ':check_status' => 'UNALLOCATED'));
-
-
-//    $ans_update = db_update('answer_sheets') // Table name no longer needs {}
-//        ->fields(array(
-//          'status' => 'ALLOCATED',
-//          'head_examiner' => $form_state['input']['head_examiner'],
-//        ))
-//      ->condition('paper_code', $form_state['input']['allocation_papercode'], '=')
-//      ->condition('status', 'UNALLOCATED', '=')  
-//      ->execute();        
+  $limit = $form_state['values']['no_sheet_allocated'];
+  $ans_update = "UPDATE answer_sheets SET status = :status, head_examiner = :head_examiner WHERE paper_code = :paper_code AND status = :check_status LIMIT $limit";
+  $ans_updated = db_query($ans_update, array(
+    ':status' => 'ALLOCATED',
+    ':head_examiner' => $form_state['input']['head_examiner'],
+    ':paper_code' => $form_state['input']['allocation_papercode'],
+    ':check_status' => 'UNALLOCATED',
+  ));
   db_set_active('default'); // We need to call the main (drupal) db back  
-  drupal_set_message(t('inserted successfully.'));
+  drupal_set_message(t('Answersheet allocated successfully.'));
+  drupal_goto('manage/allocation');
 }
