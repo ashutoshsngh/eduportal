@@ -20,6 +20,23 @@ function answersheet_menu() {
     'file' => 'includes/answersheet.add_form.inc',
   );
 
+  $items['download/answer/sheet'] = array(
+    'title' => 'Download answersheet.',
+    'page callback' => 'download_answer_sheet',
+    'access callback' => TRUE,
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'includes/answersheet.add_form.inc',
+  );
+
+  $items['download/answer/sheet/%'] = array(
+    'title' => 'Download answersheet json.',
+    'page callback' => 'download_answer_sheet_json',
+    'page arguments' => array(3),
+    'access callback' => TRUE,
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'includes/answersheet.add_form.inc',
+  );
+
   return $items;
 }
 
@@ -98,23 +115,29 @@ function get_submitted_paper_options() {
 function answersheet_batch_fix_process($filename, $values, &$context) {
   $selectedpaper = explode('-', $values['select_paper']);
   db_set_active('legecy');
-  $insert = db_insert('answer_sheets');
-  $insert->fields(array(
-    'sheet_name' => $filename,
-    'subject_code' => $selectedpaper[0],
-    'region_code' => $selectedpaper[1],
-    'exam_code' => $selectedpaper[4],
-    'paper_set' => $selectedpaper[2],
-    'language' => $selectedpaper[3],
-    'paper_code' => $selectedpaper[5],
-    'status' => 'UNALLOCATED',
-    'evaluation_marks' => 0,
-    're_evaluation_marks' => 0,
-    'alloted_to' => 0,
-    'head_examiner' => 0,
-    'examiner' => 0,
-  ));
-  $insert->execute();
+  $query = db_select('answer_sheets', 'a');
+  $query->fields('a', array('id'))
+      ->condition('a.sheet_name', $filename);
+  $result = $query->execute()->rowCount();
+  if (empty($result)) {
+    $insert = db_insert('answer_sheets');
+    $insert->fields(array(
+      'sheet_name' => $filename,
+      'subject_code' => $selectedpaper[0],
+      'region_code' => $selectedpaper[1],
+      'exam_code' => $selectedpaper[4],
+      'paper_set' => $selectedpaper[2],
+      'language' => $selectedpaper[3],
+      'paper_code' => $selectedpaper[5],
+      'status' => 'UNALLOCATED',
+      'evaluation_marks' => 0,
+      're_evaluation_marks' => 0,
+      'alloted_to' => 0,
+      'head_examiner' => 0,
+      'examiner' => 0,
+    ));
+    $insert->execute();
+  }
   db_set_active('default');
 }
 
@@ -135,5 +158,4 @@ function answersheet_batch_fix_finished($success, $results, $operations) {
     $message = 'An error occurred while processing ' . $error_operation[0] . ' with arguments :' . print_r($error_operation[0], TRUE);
   }
   drupal_set_message($message);
-  drupal_set_message(l('Run Batch Again', 'example/batch'));
 }
