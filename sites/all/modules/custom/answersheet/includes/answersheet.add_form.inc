@@ -41,6 +41,11 @@ function answersheet_add_form() {
   return $form;
 }
 
+function answersheet_add_form_validate($form, &$form_state) {
+  $form_state['values']['files'] = $_FILES['files']['name'];
+  unset($_FILES['files']);
+}
+
 function answersheet_add_form_submit($form, &$form_state) {
   $values = $form_state['values'];
   $batch = array(
@@ -51,10 +56,99 @@ function answersheet_add_form_submit($form, &$form_state) {
     'progress_message' => t('Processed @current out of @total.'),
     'error_message' => t('Fix has encountered an error.')
   );
-  $results = array("Hello", "World");
-  foreach ($_FILES['files']['name'] as $result) {
+  foreach ($form_state['values']['files'] as $result) {
     $batch['operations'][] = array('answersheet_batch_fix_process', array($result, $values));
   }
   batch_set($batch);
   batch_process('add/answer/sheet'); // The path to redirect to when done.
+}
+
+/**
+ * Download answersheet callback.
+ */
+function download_answer_sheet() {
+  db_set_active('legecy');
+  $query = db_select('allocation_log', 'al');
+  $query->fields('al')
+      //->condition('al.head_examiner', 1)
+      //->condition('al.downloadstatus', 0)
+      ->groupBy('al.paper_code')
+      ->groupBy('al.downloadstatus');
+  $query = $query->extend('PagerDefault')->limit(50);
+  $query->addExpression('SUM(al.total_sheets)', 'sumvalue');
+  $result = $query->execute()->fetchAll();
+  db_set_active();
+  $header = array(
+    array('data' => t('Paper Code')),
+    array('data' => t('Allocated sheets')),
+    array('data' => t('Action')),
+  );
+  $rows = array();
+  if (!empty($result)) {
+    foreach ($result as $value) {
+      if ($value->downloadstatus) {
+        $link = 'Already downloaded';
+      }
+      else {
+        $link = l('Download', 'download/answer/sheet/' . $value->paper_code);
+      }
+      $rows[] = array(
+        $value->paper_code,
+        $value->sumvalue,
+        $link,
+      );
+    }
+  }
+  $build = array();
+  $build['table'] = array(
+    '#markup' => theme('table', array('header' => $header, 'rows' => $rows, 'empty' => t('Nothing is assigned to you.'))),
+  );
+  $build['pager'] = array(
+    '#markup' => theme('pager'),
+  );
+  return $build;
+}
+
+/**
+ * Download answersheet in json format.
+ * @param type $papercode
+ */
+function download_answer_sheet_json($papercode) {
+  db_set_active('legecy');
+  $query = db_select('answer_sheets', 'a');
+  $query->fields('a')
+      ->condition('a.status', 'ALLOCATED')
+      //->condition('a.head_examiner', 1)
+      //->condition('a.downloadstatus', 0)
+      ->condition('a.paper_code', $papercode);
+  $result = $query->execute()->fetchAll();
+  db_set_active('default');
+  $currentids = array_map(function ($value) {
+    return $value->id;
+  }, $result);
+  $file = $papercode . '-answersheet.json';
+  file_put_contents($file, json_encode($result));
+  header("Content-type: application/json");
+  header('Content-Disposition: attachment; filename="' . basename($file) . '"');
+  header('Content-Length: ' . filesize($file));
+  header("refresh:1;");
+  readfile($file);
+  update_download_status($papercode, $currentids);
+}
+
+function update_download_status($papercode, $currentids) {
+  db_set_active('legecy');
+  $update = db_update('allocation_log');
+  $update->fields(array(
+    'downloadstatus' => 1,
+  ));
+  $update->condition('paper_code', $papercode, '=');
+  $update->execute();
+  $update = db_update('answer_sheets');
+  $update->fields(array(
+    'downloadstatus' => 1,
+  ));
+  $update->condition('id', $currentids, 'IN');
+  $update->execute();
+  db_set_active('default');
 }
