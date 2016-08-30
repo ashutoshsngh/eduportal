@@ -126,13 +126,13 @@ function download_answer_sheet_json($papercode) {
   $currentids = array_map(function ($value) {
     return $value->id;
   }, $result);
-  $file = $papercode . '-answersheet.json';
-  file_put_contents($file, json_encode($result));
+  $file = $papercode . '-answersheet1.json';
+  file_put_contents('/tmp/' . $file, json_encode($result));
   header("Content-type: application/json");
   header('Content-Disposition: attachment; filename="' . basename($file) . '"');
-  header('Content-Length: ' . filesize($file));
+  header('Content-Length: ' . filesize('/tmp/' . $file));
   header("refresh:1;");
-  readfile($file);
+  readfile('/tmp/' . $file);
   update_download_status($papercode, $currentids);
 }
 
