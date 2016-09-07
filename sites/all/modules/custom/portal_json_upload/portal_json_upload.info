@@ -1,0 +1,4 @@
+name =  Portal JSON Upload
+description = Upload JSON File.
+core = 7.x
+package = Portal JSON Upload
