@@ -49,14 +49,35 @@ function exam_portal_all_head_examiner() {
 }
 
 /**
- * Total unallocted count based on paper id.
+ * fuction to fetch all head examiner.
  */
-function answersheet_unallocated_count($code) {
+function exam_portal_all_examiner() {
+  db_set_active('legecy');
+  $query = db_select('examiners', 'e')
+      ->fields('e', array('id', 'name'))
+      ->execute();
+  db_set_active('default'); // We need to call the main (drupal) db back      
+  $result = $query->fetchAll();
+  foreach ($result as $value) {
+    $res[$value->id] = $value->name;
+  }
+  return $res;
+}
+
+/**
+ * Total unallocted count based on paper id and userid.
+ */
+function answersheet_unallocated_count($code,$uid = FALSE) {
+  global $user;
+  $keys = array_keys($user->roles);
   db_set_active('legecy');
   $query = db_select('answer_sheets', 's');
   $query->fields('s', array('id'))
       ->condition('s.paper_code', $code)
       ->condition('s.STATUS', 'UNALLOCATED');
+  if($uid) {
+       $query->condition('s.head_examiner',1);   
+      }
   $result = $query->execute()->rowCount();
   db_set_active('default');
   return $result;

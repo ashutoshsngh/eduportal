@@ -9,8 +9,14 @@
  * Mangage allocation callback.
  */
 function manage_allocation_callback() {
+  global $user;
+  $keys = array_keys($user->roles);
   db_set_active('legecy');
-  $query = db_query("SELECT paper_code,STATUS , count( * ) AS 'count' FROM answer_sheets GROUP BY paper_code,STATUS");
+  if(in_array(5,$keys)) {
+   $query = db_query("SELECT paper_code,STATUS , count( * ) AS 'count' FROM answer_sheets where head_examiner = 1 GROUP BY paper_code,STATUS");   
+  }else{
+   $query = db_query("SELECT paper_code,STATUS , count( * ) AS 'count' FROM answer_sheets GROUP BY paper_code,STATUS");   
+  }
   $result = $query->fetchAll();
   db_set_active('default');
   $header = array(

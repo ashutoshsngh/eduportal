@@ -30,6 +30,9 @@ function answersheet_add_form() {
     '#name' => 'files[]',
     '#title' => t('Upload answer sheets'),
     '#attributes' => array('multiple' => 'multiple'),
+    '#upload_validators' => array(
+        'file_validate_extensions' => array('pdf'),
+    ),
       // '#required' => TRUE,
   );
 
