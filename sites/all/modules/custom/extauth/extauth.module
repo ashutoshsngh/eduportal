@@ -91,7 +91,9 @@ function extauth_login_validate( $form, &$form_state )
  * point a user is inserted into the database without an e-mail address, which is the case we
  * will deal with in this function.
  */
-define( 'EXTERNAL_AUTH_RID', 4 );
+//define( 'EXTERNAL_AUTH_RID', 4 );
+define( 'EXTERNAL_HEAD_EXAMINER_RID', 7 );
+define( 'EXTERNAL_EXAMINER_RID', 6 );
 
 function extauth_user_insert( &$edit, &$account, $category = null )
 {
@@ -122,7 +124,20 @@ function extauth_user_insert( &$edit, &$account, $category = null )
         // externally. Note that EXTERNAL_AUTH_RID is defined as 3 in this sample code but you
         // should set it to whatever Role ID is appropriate in your case, eg. create the new
         // role, do a query to find the RID for that role and set EXTERNAL_AUTH_RID to that RID.
-        $account->roles[EXTERNAL_AUTH_RID] = 'external user';
+         
+        db_set_active('legecy');
+        $query = db_select('head_examiners', 'he')
+            ->fields('he', array('role'))
+            ->condition('email', $account->name, '=')
+            ->execute();
+        $result = $query->fetchField();
+        db_set_active('default');
+        if($result == 'head examiner') {
+            $account->roles[EXTERNAL_HEAD_EXAMINER_RID] = 'examiner';
+        }elseif($result == 'examiner'){
+            $account->roles[EXTERNAL_EXAMINER_RID] = 'head examiner';
+        }
+
     }
 }
 
