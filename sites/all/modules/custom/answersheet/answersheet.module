@@ -5,6 +5,9 @@
  * Main module file.
  */
 
+require 'aws/aws-autoloader.php';
+use Aws\S3\S3Client;
+
 /**
  * Implements hook_menu().
  */
@@ -106,14 +109,25 @@ function get_submitted_paper_options() {
   return $options;
 }
 
+function initialize_aws_connection() {
+  $s3 = S3Client::factory(array(
+    'credentials' => array(
+        'key'    => variable_get('aws_key'),
+        'secret' => variable_get('secret_key'),
+    ),
+      'region' => variable_get('region'),
+      'version' => 'latest'
+));
+  return $s3;
+}
+
 /**
  * Batch process for saving answer sheet.
  * @param type $filename
  * @param type $values
  * @param type $context
  */
-function answersheet_batch_fix_process($filename, $values, &$context) {
-  $selectedpaper = explode('-', $values['select_paper']);
+function answersheet_batch_fix_process($filename, $values,$selectedpaper, &$context) {
   db_set_active('legecy');
   $query = db_select('answer_sheets', 'a');
   $query->fields('a', array('id'))
@@ -135,6 +149,7 @@ function answersheet_batch_fix_process($filename, $values, &$context) {
       'alloted_to' => 0,
       'head_examiner' => 0,
       'examiner' => 0,
+      'rollno' => substr($filename,5,12),
     ));
     $insert->execute();
   }
