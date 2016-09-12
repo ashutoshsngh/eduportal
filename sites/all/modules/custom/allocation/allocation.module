@@ -14,7 +14,7 @@ function allocation_menu() {
   $items['manage/allocation'] = array(
     'title' => 'Manage allocation',
     'page callback' => 'manage_allocation_callback',
-    'access callback' => TRUE,
+    'access callback' => 'manage_allocation_callback',
     'type' => MENU_CALLBACK,
     'file' => 'includes/allocation.manage_allocation.inc',
   );
