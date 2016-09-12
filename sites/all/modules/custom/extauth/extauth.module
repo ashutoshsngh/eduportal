@@ -92,8 +92,9 @@ function extauth_login_validate( $form, &$form_state )
  * will deal with in this function.
  */
 //define( 'EXTERNAL_AUTH_RID', 4 );
-define( 'EXTERNAL_HEAD_EXAMINER_RID', 7 );
-define( 'EXTERNAL_EXAMINER_RID', 6 );
+define( 'EXTERNAL_HEAD_EXAMINER_RID', 6 );
+define( 'EXTERNAL_EXAMINER_RID', 7 );
+define('EXTERNAL_HEAD_EXAMINER_GLOBAL_RID',8);
 
 function extauth_user_insert( &$edit, &$account, $category = null )
 {
@@ -132,10 +133,12 @@ function extauth_user_insert( &$edit, &$account, $category = null )
             ->execute();
         $result = $query->fetchField();
         db_set_active('default');
-        if($result == 'head examiner') {
-            $account->roles[EXTERNAL_HEAD_EXAMINER_RID] = 'examiner';
-        }elseif($result == 'examiner'){
-            $account->roles[EXTERNAL_EXAMINER_RID] = 'head examiner';
+        if($result == 'HEAD_EXAMINER_GLOBAL') {
+            $account->roles[EXTERNAL_HEAD_EXAMINER_GLOBAL_RID] = 'HEAD_EXAMINER_GLOBAL';
+        }elseif($result == 'EXAMINER'){
+            $account->roles[EXTERNAL_EXAMINER_RID] = 'EXAMINER';
+        }elseif($result == 'HEAD_EXAMINER') {
+          $account->roles[EXTERNAL_HEAD_EXAMINER_RID] = 'HEAD_EXAMINER';
         }
 
     }
@@ -147,19 +150,22 @@ function extauth_user_insert( &$edit, &$account, $category = null )
  */
 function validateExternalUser( $username, $password )
 {
-    //print_r($username);die();
-    //print_r($password);die();
-    db_set_active('legecy');
-    $query = db_select('head_examiners', 'he')
-        ->fields('he', array('email', 'username', 'password'))
-        ->condition('email', $username, '=')
-        ->execute();
-    $result = $query->fetchAssoc();
-    db_set_active('default');
+    $result = get_userdata($username);
     if($password == $result['password']) {
         return true;
-    }    
+    }   
     
     
     //return true;
+}
+
+function get_userdata($email) {
+  db_set_active('legecy');
+  $query = db_select('head_examiners', 'he')
+        ->fields('he', array('email', 'username', 'password','id'))
+        ->condition('email', $email, '=')
+        ->execute();
+  $result = $query->fetchAssoc();
+  db_set_active('default');
+  return $result;
 }

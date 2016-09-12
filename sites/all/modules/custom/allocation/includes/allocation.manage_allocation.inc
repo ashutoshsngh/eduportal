@@ -11,11 +11,14 @@
 function manage_allocation_callback() {
   global $user;
   $keys = array_keys($user->roles);
+  $loggedinuser = get_userdata($user->mail);
   db_set_active('legecy');
-  if(in_array(5,$keys)) {
-   $query = db_query("SELECT paper_code,STATUS , count( * ) AS 'count' FROM answer_sheets where head_examiner = 1 GROUP BY paper_code,STATUS");   
-  }else{
-   $query = db_query("SELECT paper_code,STATUS , count( * ) AS 'count' FROM answer_sheets GROUP BY paper_code,STATUS");   
+  if (in_array(6, $keys)) {
+    $id = $loggedinuser['id'];
+    $query = db_query("SELECT paper_code,STATUS , count( * ) AS 'count' FROM answer_sheets where head_examiner = $id GROUP BY paper_code,STATUS");
+  }
+  else {
+    $query = db_query("SELECT paper_code,STATUS , count( * ) AS 'count' FROM answer_sheets GROUP BY paper_code,STATUS");
   }
   $result = $query->fetchAll();
   db_set_active('default');
@@ -32,6 +35,9 @@ function manage_allocation_callback() {
       if ($value->STATUS == 'ALLOCATED') {
         $key = 'allocated';
       }
+      elseif($value->STATUS == 'CHECKED') {
+        $key = 'checked';
+      }
       else {
         $key = 'unallocated';
       }
@@ -42,12 +48,13 @@ function manage_allocation_callback() {
       if (array_key_exists('allocated', $value) && array_key_exists('unallocated', $value)) {
         $total = $value['allocated'] + $value['unallocated'];
       }
-      else if (array_key_exists('allocated', $value) && !array_key_exists('unallocated', $value)) {
+      elseif (array_key_exists('allocated', $value) && !array_key_exists('unallocated', $value)) {
         $total = $value['allocated'];
       }
       else {
         $total = $value['unallocated'];
       }
+      
       $data[] = array(
         $key,
         $total,
@@ -56,13 +63,13 @@ function manage_allocation_callback() {
         l(t('Allocate'), 'allocation_entry/' . $key),
       );
     }
+  }
     $build = array();
     $build['table'] = array(
-      '#markup' => theme('table', array('header' => $header, 'rows' => $data)),
+      '#markup' => theme('table', array('header' => $header, 'rows' => $data,'empty' => 'no')),
     );
     $build['pager'] = array(
       '#markup' => theme('pager'),
     );
     return $build;
-  }
 }

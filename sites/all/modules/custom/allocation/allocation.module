@@ -33,14 +33,15 @@ function allocation_menu() {
 }
 
 /**
- * fuction to fetch all head examiner.
+ * Fuction to fetch all head examiner.
  */
 function exam_portal_all_head_examiner() {
   db_set_active('legecy');
   $query = db_select('head_examiners', 'he')
       ->fields('he', array('id', 'name'))
       ->execute();
-  db_set_active('default'); // We need to call the main (drupal) db back      
+  // We need to call the main (drupal) db back.
+  db_set_active('default');
   $result = $query->fetchAll();
   foreach ($result as $value) {
     $res[$value->id] = $value->name;
@@ -49,14 +50,15 @@ function exam_portal_all_head_examiner() {
 }
 
 /**
- * fuction to fetch all head examiner.
+ * Fuction to fetch all head examiner.
  */
 function exam_portal_all_examiner() {
   db_set_active('legecy');
   $query = db_select('examiners', 'e')
       ->fields('e', array('id', 'name'))
       ->execute();
-  db_set_active('default'); // We need to call the main (drupal) db back      
+  // We need to call the main (drupal) db back.
+  db_set_active('default');
   $result = $query->fetchAll();
   foreach ($result as $value) {
     $res[$value->id] = $value->name;
@@ -67,7 +69,7 @@ function exam_portal_all_examiner() {
 /**
  * Total unallocted count based on paper id and userid.
  */
-function answersheet_unallocated_count($code,$uid = FALSE) {
+function answersheet_unallocated_count($code, $uid = FALSE) {
   global $user;
   $keys = array_keys($user->roles);
   db_set_active('legecy');
@@ -75,9 +77,9 @@ function answersheet_unallocated_count($code,$uid = FALSE) {
   $query->fields('s', array('id'))
       ->condition('s.paper_code', $code)
       ->condition('s.STATUS', 'UNALLOCATED');
-  if($uid) {
-       $query->condition('s.head_examiner',1);   
-      }
+  if ($uid) {
+    $query->condition('s.head_examiner', 1);
+  }
   $result = $query->execute()->rowCount();
   db_set_active('default');
   return $result;
