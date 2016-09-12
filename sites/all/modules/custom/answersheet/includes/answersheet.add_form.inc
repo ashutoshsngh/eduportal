@@ -161,21 +161,26 @@ function download_answer_sheet_json($papercode) {
   $answersheetfolder = $foldername . '/answersheets';
   mkdir($foldername);
   mkdir($answersheetfolder);
-  foreach ($result as $value) {
-    $fileexist = $s3->doesObjectExist($bucket, '411/' . $value->sheet_name);
+  $logid = array();
+  foreach ($result as $key=> $value) {
+    $logid[$key] = $value->allocation_log_id;
+    $fileexist = $s3->doesObjectExist($bucket, $papercode.'/' . $value->sheet_name);
     if ($fileexist) {
       $result = $s3->getObject(array(
         'Bucket' => $bucket,
-        'Key' => '411/' . $value->sheet_name,
+        'Key' => $papercode.'/' . $value->sheet_name,
         'SaveAs' => $answersheetfolder . '/' . $value->sheet_name
       ));
     }
   }
+  $logdetails = get_log_details(array_unique($logid));
   $currentids = array_map(function ($value) {
     return $value->id;
   }, $result);
-  $file = $papercode . '-answersheet1.json';
+  $file = $papercode . '-answersheet.json';
+  $log = $papercode.'-allocationlog.json';
   file_put_contents($foldername . '/' . $file, json_encode($result));
+  file_put_contents($foldername . '/' . $log, json_encode($logdetails));
   createZipfile($foldername);
   $archive_file_name = $foldername . '.zip';
   // then send the headers to force download the zip file
@@ -185,7 +190,7 @@ function download_answer_sheet_json($papercode) {
   header("Expires: 0");
   header("refresh:1;");
   readfile("$archive_file_name");
-  update_download_status($papercode, $currentids);
+  //update_download_status($papercode, $currentids);
 }
 
 function createZipfile($filepath) {
