@@ -49,7 +49,7 @@ function answersheet_add_form_validate($form, &$form_state) {
   if(count($array_unique) > 1) {
     form_set_error('','Only pdf files are accepted.');
   }
-  if($array_unique[0] != 'text/plain') {
+  if($array_unique[0] != 'text/pdf') {
     form_set_error('','Only pdf files are accepted.');
   }
 }
