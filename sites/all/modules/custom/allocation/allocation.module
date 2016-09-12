@@ -14,7 +14,7 @@ function allocation_menu() {
   $items['manage/allocation'] = array(
     'title' => 'Manage allocation',
     'page callback' => 'manage_allocation_callback',
-    'access callback' => 'manage_allocation_callback',
+    'access callback' => 'manage_allocation_access_callback',
     'type' => MENU_CALLBACK,
     'file' => 'includes/allocation.manage_allocation.inc',
   );
@@ -32,6 +32,14 @@ function allocation_menu() {
   return $items;
 }
 
+function manage_allocation_access_callback() {
+  global $user;
+  $keys = array_keys($user->roles);
+  if($user->uid == 0 || in_array(EXTERNAL_HEAD_EXAMINER_GLOBAL_RID,$keys)) {
+    return FALSE;
+  }
+  return TRUE;
+}
 /**
  * Fuction to fetch all head examiner.
  */

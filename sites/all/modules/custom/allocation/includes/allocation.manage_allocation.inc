@@ -73,12 +73,3 @@ function manage_allocation_callback() {
     );
     return $build;
 }
-
-function manage_allocation_access_callback() {
-  global $user;
-  $keys = array_keys($user->roles);
-  if($user->uid == 0 || in_array(EXTERNAL_HEAD_EXAMINER_GLOBAL_RID,$keys)) {
-    return FALSE;
-  }
-  return TRUE;
-}
