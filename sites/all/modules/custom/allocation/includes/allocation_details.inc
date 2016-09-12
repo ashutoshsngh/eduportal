@@ -29,7 +29,7 @@ function allocation_details_entry($forn, &$form_state, $code) {
     '#type' => 'hidden',
     '#default_value' => $user->name,
   );
-  if (in_array(6, $keys)) {
+  if (in_array(EXTERNAL_HEAD_EXAMINER_RID, $keys)) {
     $form['he_status'] = array(
       '#type' => 'hidden',
       '#value' => 1,
@@ -80,7 +80,7 @@ function allocation_details_entry($forn, &$form_state, $code) {
     "#title" => t("Number of sheet to be allocated"),
     '#required' => TRUE,
   );
-  if (in_array(6, $keys)) {
+  if (in_array(EXTERNAL_HEAD_EXAMINER_RID, $keys)) {
     $form['head_examiner'] = array(
       '#type' => 'select',
       "#title" => t("Select Examiner"),

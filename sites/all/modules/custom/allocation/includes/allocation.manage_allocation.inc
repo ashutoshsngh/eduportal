@@ -13,7 +13,7 @@ function manage_allocation_callback() {
   $keys = array_keys($user->roles);
   $loggedinuser = get_userdata($user->mail);
   db_set_active('legecy');
-  if (in_array(6, $keys)) {
+  if (in_array(EXTERNAL_HEAD_EXAMINER_RID, $keys)) {
     $id = $loggedinuser['id'];
     $query = db_query("SELECT paper_code,STATUS , count( * ) AS 'count' FROM answer_sheets where head_examiner = $id GROUP BY paper_code,STATUS");
   }

@@ -95,7 +95,7 @@ function download_answer_sheet() {
   db_set_active('legecy');
   $query = db_select('allocation_log', 'al');
   $query->fields('al');
-  if(in_array(8,$keys)) {
+  if(in_array(EXTERNAL_HEAD_EXAMINER_GLOBAL_RID,$keys)) {
     $query->condition('al.head_examiner',$loggedinuser['id']);
   }
   $query->condition('al.downloadstatus', 0);
@@ -148,7 +148,7 @@ function download_answer_sheet_json($papercode) {
   $query = db_select('answer_sheets', 'a');
   $query->fields('a')
       ->condition('a.status', 'ALLOCATED');
-  if(in_array(8,$keys)) {
+  if(in_array(EXTERNAL_HEAD_EXAMINER_GLOBAL_RID,$keys)) {
     $query->condition('a.head_examiner',$loggedinuser['id']);
   }
   $query->condition('a.downloadstatus', 0);
