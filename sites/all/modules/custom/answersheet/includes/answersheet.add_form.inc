@@ -166,7 +166,7 @@ function download_answer_sheet_json($papercode) {
     $logid[$key] = $value->allocation_log_id;
     $fileexist = $s3->doesObjectExist($bucket, $papercode.'/' . $value->sheet_name);
     if ($fileexist) {
-      $result = $s3->getObject(array(
+      $response = $s3->getObject(array(
         'Bucket' => $bucket,
         'Key' => $papercode.'/' . $value->sheet_name,
         'SaveAs' => $answersheetfolder . '/' . $value->sheet_name
@@ -186,11 +186,9 @@ function download_answer_sheet_json($papercode) {
   // then send the headers to force download the zip file
   header("Content-type: application/zip");
   header('Content-Disposition: attachment; filename="' . basename($archive_file_name) . '"');
-  header("Pragma: no-cache");
-  header("Expires: 0");
-  header("refresh:1;");
+  header("Refresh:1;");
   readfile("$archive_file_name");
-  //update_download_status($papercode, $currentids);
+  update_download_status($papercode, $currentids);
 }
 
 function createZipfile($filepath) {
@@ -224,18 +222,26 @@ function createZipfile($filepath) {
 }
 
 function update_download_status($papercode, $currentids) {
+  global $user;
+  $keys = array_keys($user->roles);
+  $loggedinuser = get_userdata($user->mail);
   db_set_active('legecy');
   $update = db_update('allocation_log');
   $update->fields(array(
     'downloadstatus' => 1,
   ));
   $update->condition('paper_code', $papercode, '=');
+  if(in_array(EXTERNAL_HEAD_EXAMINER_GLOBAL_RID,$keys)) {
+    $update->condition('head_examiner',$loggedinuser['id']);
+  }
   $update->execute();
+  if(!empty($currentids)) {
   $update = db_update('answer_sheets');
   $update->fields(array(
     'downloadstatus' => 1,
   ));
   $update->condition('id', $currentids, 'IN');
   $update->execute();
+  }
   db_set_active('default');
 }

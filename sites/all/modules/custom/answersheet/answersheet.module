@@ -176,6 +176,7 @@ function answersheet_batch_fix_finished($success, $results, $operations) {
 }
 
 function get_log_details($logid = array()) {
+  if(!empty($logid)) {
   db_set_active('legecy');
   $query = db_select('allocation_log','a');
   $query->fields('a');
@@ -183,4 +184,5 @@ function get_log_details($logid = array()) {
   $result = $query->execute()->fetchAll();
   db_set_active('default');
   return $result;
+  }
 }
